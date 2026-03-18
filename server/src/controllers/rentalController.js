@@ -1,45 +1,48 @@
-import asyncHandler from '../utils/asyncHandler.js';
-import Rental from '../models/Rental.js';
+import asyncHandler from 'express-async-handler';
+import {
+  createRentalService,
+  getRentalsService,
+  getRentalByIdService,
+  updateRentalService,
+  deleteRentalService,
+} from '../services/rentalService.js';
+
+// @desc    Create a new rental
+// @route   POST /api/rentals
+// @access  Private
+export const createRental = asyncHandler(async (req, res) => {
+  const createdRental = await createRentalService(req.body, req.user._id);
+  res.status(201).json(createdRental);
+});
 
 // @desc    Get all rentals
 // @route   GET /api/rentals
 // @access  Public
-const getRentals = asyncHandler(async (req, res) => {
-    const rentals = await Rental.find({ availability: true }).populate('owner', 'name email');
-    res.json(rentals);
+export const getRentals = asyncHandler(async (req, res) => {
+  const rentals = await getRentalsService();
+  res.json(rentals);
 });
 
-// @desc    Get single rental by ID
+// @desc    Get rental by ID
 // @route   GET /api/rentals/:id
 // @access  Public
-const getRentalById = asyncHandler(async (req, res) => {
-    const rental = await Rental.findById(req.params.id).populate('owner', 'name email');
-
-    if (rental) {
-        res.json(rental);
-    } else {
-        res.status(404);
-        throw new Error('Rental not found');
-    }
+export const getRentalById = asyncHandler(async (req, res) => {
+  const rental = await getRentalByIdService(req.params.id);
+  res.json(rental);
 });
 
-// @desc    Create a rental
-// @route   POST /api/rentals
+// @desc    Update a rental
+// @route   PUT /api/rentals/:id
 // @access  Private
-const createRental = asyncHandler(async (req, res) => {
-    const { title, description, category, pricePerDay, location } = req.body;
-
-    const rental = new Rental({
-        title,
-        description,
-        category,
-        pricePerDay,
-        location,
-        owner: req.user._id,
-    });
-
-    const createdRental = await rental.save();
-    res.status(201).json(createdRental);
+export const updateRental = asyncHandler(async (req, res) => {
+  const updatedRental = await updateRentalService(req.params.id, req.body, req.user._id);
+  res.json(updatedRental);
 });
 
-export { getRentals, getRentalById, createRental };
+// @desc    Delete a rental
+// @route   DELETE /api/rentals/:id
+// @access  Private
+export const deleteRental = asyncHandler(async (req, res) => {
+  const result = await deleteRentalService(req.params.id, req.user._id);
+  res.json(result);
+});

@@ -2,13 +2,14 @@ import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
-import { notFound, errorHandler } from './src/middlewares/errorMiddleware.js';
+import { notFound, errorHandler } from './src/middlewares/common.js';
 
 // Routes imports
 import authRoutes from './src/routes/authRoutes.js';
 import userRoutes from './src/routes/userRoutes.js';
 import rentalRoutes from './src/routes/rentalRoutes.js';
 import bookingRoutes from './src/routes/bookingRoutes.js';
+import paymentRoutes from './src/routes/paymentRoutes.js';
 import messageRoutes from './src/routes/messageRoutes.js';
 import reviewRoutes from './src/routes/reviewRoutes.js';
 import wishlistRoutes from './src/routes/wishlistRoutes.js';
@@ -35,12 +36,13 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/rentals', rentalRoutes);
 app.use('/api/bookings', bookingRoutes);
+app.use('/api/payments', paymentRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/wishlist', wishlistRoutes);
 
 app.get('/', (req, res) => {
-    res.send('API is running...');
+    res.send('RentEase API is running...');
 });
 
 // Error handling middleware
