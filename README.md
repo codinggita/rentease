@@ -7,20 +7,49 @@
 ![MongoDB](https://img.shields.io/badge/Database-MongoDB-brightgreen)
 ![License](https://img.shields.io/badge/License-MIT-yellow)
 
-**RentEase** is a full-stack web application that allows users to **rent and lend items within their local community**. Instead of buying expensive products that are only used occasionally, users can rent items from others nearby.
+# RentEase - Rental Marketplace Platform
 
-The platform helps people **save money, reduce waste, and utilize resources efficiently** by creating a peer-to-peer rental marketplace.
+## 🚀 Overview
+RentEase is a high-fidelity rental marketplace where users can browse, search, and rent high-end electronics and equipment. The platform features a premium Flipkart-inspired UI with full dark mode support and responsive design.
 
-This project demonstrates modern **full-stack development using React, Tailwind CSS, Node.js, Express.js, and MongoDB**.
+## 🛠 Tech Stack
 
----
+### Frontend
+- **Framework**: React.js + Vite
+- **Styling**: Tailwind CSS
+- **Animations**: Framer Motion
+- **State Management**: Context API (Auth, Theme, Wishlist)
+- **Forms**: React Hook Form + Zod Validation
+- **Icons**: Lucide React
 
-# 📌 Overview
+### Backend (Status: Setup Complete, Integration Pending)
+- **Runtime**: Node.js + Express.js
+- **Database**: MongoDB + Mongoose
+- **Auth**: JWT + bcryptjs
 
-Many people purchase items that are rarely used, such as cameras, tools, speakers, or projectors. These items often remain unused most of the time.
+## 📦 Features Implemented
+- **Browse & Filter**: Advanced search and filtering system for gear.
+- **Product Details**: Rich product pages with image galleries and trust signals.
+- **User Dashboard**: Account overview, listings management, and booking history.
+- **Authentication**: Mock Login/Signup flow with secure validation.
+- **Theme Engine**: Seamless toggle between Light and Dark modes.
 
-**RentEase** solves this problem by allowing users to:
+## 🚥 Getting Started
 
+### Prerequisites
+- Node.js (v16 or higher)
+- npm or yarn
+
+### Frontend Setup
+1. `cd client`
+2. `npm install`
+3. `npm run dev`
+
+### Backend Setup
+1. `cd server`
+2. `npm install`
+3. Create `.env` based on `.env.example`
+4. `npm run dev`
 * List items they want to rent out
 * Search for items available nearby
 * Filter and sort rental listings

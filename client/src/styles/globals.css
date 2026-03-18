@@ -1,13 +1,145 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-:root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+@theme {
+  --color-primary: #2874f0;
+  --color-primary-dark: #1c56b3;
+  --color-secondary: #fb641b;
+  
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-heading: 'Outfit', sans-serif;
+
+  --shadow-premium: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
 }
 
-body {
-  margin: 0;
-  min-height: 100vh;
-  background-color: #f1f3f6; /* Light gray Background */
+@variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  html {
+    background-color: #f1f3f6;
+    color: #0f172a; /* Slightly darker for better contrast */
+    transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  html.dark {
+    background-color: #020617;
+    color: #f1f5f9;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background-color: inherit;
+    color: inherit;
+    font-family: var(--font-sans);
+    letter-spacing: -0.01em; /* Tighter inter-letter spacing for modern look */
+    line-height: 1.6; /* Improved readability */
+  }
+ 
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-black;
+    font-family: var(--font-heading);
+    letter-spacing: -0.03em; /* More aggressive tracking for headings */
+    line-height: 1.1;
+  }
+ 
+  p {
+    @apply text-slate-600 dark:text-slate-400 font-medium;
+    letter-spacing: -0.01em;
+  }
+
+  button, input, select, textarea {
+    font-family: inherit;
+  }
+}
+
+@layer utilities {
+  .glass {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+  }
+
+  .dark .glass {
+    background: rgba(15, 23, 42, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .glass-card {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: var(--shadow-glass);
+  }
+
+  .dark .glass-card {
+    background: rgba(30, 41, 59, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  /* Custom Scrollbar for Flipkart Style */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+  }
+
+  .dark ::-webkit-scrollbar-thumb {
+    background: #334155;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* Custom Dual Range Slider Styles */
+  .custom-range-input {
+    @apply absolute w-full pointer-events-none appearance-none bg-transparent;
+    z-index: 2;
+  }
+
+  .custom-range-input::-webkit-slider-thumb {
+    @apply appearance-none w-5 h-5 bg-white border-2 border-primary rounded-full cursor-pointer pointer-events-auto shadow-lg hover:scale-110 active:scale-95 transition-all;
+    position: relative;
+    z-index: 3;
+  }
+
+  .custom-range-input::-moz-range-thumb {
+    @apply w-5 h-5 bg-white border-2 border-primary rounded-full cursor-pointer pointer-events-auto shadow-lg hover:scale-110 active:scale-95 transition-all;
+    position: relative;
+    z-index: 3;
+    border: 2px solid #2874f0;
+  }
+
+  .custom-range-input:focus {
+    @apply outline-none;
+  }
+}
+
+@keyframes bounce-slow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+.animate-bounce-slow {
+  animation: bounce-slow 3s infinite ease-in-out;
 }
