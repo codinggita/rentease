@@ -1,27 +1,17 @@
 import { Outlet } from 'react-router-dom';
+import Navbar from '../components/common/Navbar';
+import Footer from '../components/common/Footer';
 
 const MainLayout = () => {
     return (
-        <div className="flex flex-col min-h-screen">
-            <header className="bg-primary text-white p-4 shadow-md">
-                <div className="container mx-auto flex justify-between items-center">
-                    <h1 className="text-2xl font-bold">RentEase</h1>
-                    <nav>
-                        <ul className="flex space-x-4">
-                            <li><a href="/" className="hover:underline">Home</a></li>
-                            <li><a href="/login" className="hover:underline">Login</a></li>
-                        </ul>
-                    </nav>
-                </div>
-            </header>
+        <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
+            <Navbar />
             
-            <main className="flex-grow container mx-auto p-4">
+            <main className="flex-grow max-w-[1440px] mx-auto w-full px-6 lg:px-12">
                 <Outlet />
             </main>
             
-            <footer className="bg-white border-t p-4 text-center text-gray-600">
-                <p>&copy; 2026 RentEase. All rights reserved.</p>
-            </footer>
+            <Footer />
         </div>
     );
 };
