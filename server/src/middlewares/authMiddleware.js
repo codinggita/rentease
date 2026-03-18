@@ -1,39 +1,68 @@
-import jwt from 'jsonwebtoken';
-import asyncHandler from '../utils/asyncHandler.js';
+import asyncHandler from 'express-async-handler';
+import { supabase } from '../config/supabase.js';
 import User from '../models/User.js';
+import jwt from 'jsonwebtoken';
 
-const protect = asyncHandler(async (req, res, next) => {
-    let token;
+export const protect = asyncHandler(async (req, res, next) => {
+  const authHeader = req.headers.authorization;
 
-    token = req.cookies.jwt;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    res.status(401);
+    throw new Error('Not authorized, no token');
+  }
 
-    if (token) {
-        try {
-            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  const token = authHeader.split(' ')[1];
 
-            req.user = await User.findById(decoded.userId).select('-password');
+  try {
+    let supabaseId = null;
 
-            next();
-        } catch (error) {
-            console.error(error);
-            res.status(401);
-            throw new Error('Not authorized, token failed');
-        }
+    // Strategy 1: Validate as Supabase access_token (for frontend Supabase sessions)
+    const { data: supabaseData, error: supabaseError } = await supabase.auth.getUser(token);
+    if (supabaseData?.user) {
+      supabaseId = supabaseData.user.id;
     } else {
+      // Strategy 2: Validate as our own JWT (for backend-issued tokens)
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        supabaseId = decoded.id || decoded.sub;
+      } catch (jwtError) {
+        console.error('JWT verification failed:', jwtError.message);
         res.status(401);
-        throw new Error('Not authorized, no token');
+        throw new Error('Not authorized, invalid token');
+      }
     }
+
+    if (!supabaseId) {
+      res.status(401);
+      throw new Error('Not authorized, could not identify user');
+    }
+
+    // MongoDB lookup — non-blocking, falls back to token data
+    try {
+      req.user = await User.findOne({ supabaseId });
+    } catch (dbError) {
+      console.warn(`MongoDB auth lookup failed (non-fatal): ${dbError.message}`);
+    }
+
+    // If DB unavailable or user not in DB, use minimal object from token
+    if (!req.user) {
+      req.user = { supabaseId, _id: supabaseId };
+    }
+
+    next();
+  } catch (error) {
+    if (res.statusCode !== 401) {
+      res.status(401);
+    }
+    throw new Error(error.message || 'Not authorized');
+  }
 });
 
-// Grant access to specific roles
-const authorize = (...roles) => {
-    return (req, res, next) => {
-        if (!roles.includes(req.user.role)) {
-            res.status(403);
-            throw new Error(`User role ${req.user.role} is not authorized to access this route`);
-        }
-        next();
-    };
+export const admin = (req, res, next) => {
+  if (req.user && req.user.role === 'admin') {
+    next();
+  } else {
+    res.status(401);
+    throw new Error('Not authorized as an admin');
+  }
 };
-
-export { protect, authorize };

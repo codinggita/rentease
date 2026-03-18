@@ -1,73 +1,106 @@
-import asyncHandler from '../utils/asyncHandler.js';
+import asyncHandler from 'express-async-handler';
 import User from '../models/User.js';
-import generateToken from '../utils/generateToken.js';
+import { supabase } from '../config/supabase.js';
+import {
+  registerUserService,
+  authUserService,
+  syncExternalUserService,
+  forgotPasswordService,
+  resetPasswordService
+} from '../services/authService.js';
+
+// @desc    Register a new user (Sync with Supabase)
+// @route   POST /api/auth/signup
+// @access  Public
+export const registerUser = asyncHandler(async (req, res) => {
+  try {
+    console.log('Signup request received:', req.body.email);
+    const result = await registerUserService(req.body);
+    res.status(201).json(result);
+  } catch (error) {
+    console.error('Signup controller error:', error);
+    res.status(500).json({ 
+      message: error.message, 
+      stack: error.stack,
+      details: 'Error caught in controller try-catch'
+    });
+  }
+});
 
 // @desc    Auth user & get token
 // @route   POST /api/auth/login
 // @access  Public
-const loginUser = asyncHandler(async (req, res) => {
-    const { email, password } = req.body;
-
-    const user = await User.findOne({ email });
-
-    if (user && (await user.matchPassword(password))) {
-        generateToken(res, user._id);
-
-        res.json({
-            _id: user._id,
-            name: user.name,
-            email: user.email,
-            role: user.role,
-        });
-    } else {
-        res.status(401);
-        throw new Error('Invalid email or password');
-    }
+export const authUser = asyncHandler(async (req, res) => {
+  const result = await authUserService(req.body);
+  res.json(result);
 });
 
-// @desc    Register a new user
-// @route   POST /api/auth/signup
+// @desc    Sync external auth user (Google/Social)
+// @route   POST /api/auth/sync
 // @access  Public
-const registerUser = asyncHandler(async (req, res) => {
-    const { name, email, password } = req.body;
-
-    const userExists = await User.findOne({ email });
-
-    if (userExists) {
-        res.status(400);
-        throw new Error('User already exists');
-    }
-
-    const user = await User.create({
-        name,
-        email,
-        password,
-    });
-
-    if (user) {
-        generateToken(res, user._id);
-
-        res.status(201).json({
-            _id: user._id,
-            name: user.name,
-            email: user.email,
-            role: user.role,
-        });
-    } else {
-        res.status(400);
-        throw new Error('Invalid user data');
-    }
+export const syncUser = asyncHandler(async (req, res) => {
+  const result = await syncExternalUserService(req.body);
+  res.status(200).json(result);
 });
 
 // @desc    Logout user / clear cookie
 // @route   POST /api/auth/logout
 // @access  Public
-const logoutUser = (req, res) => {
-    res.cookie('jwt', '', {
-        httpOnly: true,
-        expires: new Date(0),
-    });
-    res.status(200).json({ message: 'Logged out successfully' });
-};
+export const logoutUser = asyncHandler(async (req, res) => {
+  res.cookie('token', '', {
+    httpOnly: true,
+    expires: new Date(0),
+  });
+  res.status(200).json({ message: 'Logged out successfully' });
+});
 
-export { loginUser, registerUser, logoutUser };
+// @desc    Login with OTP/Magic Link
+// @route   POST /api/auth/otp
+// @access  Public
+export const signInWithOtp = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+
+  const { data, error } = await supabase.auth.signInWithOtp({
+    email,
+    options: {
+      emailRedirectTo: process.env.CLIENT_URL,
+    },
+  });
+
+  if (error) {
+    res.status(400);
+    throw new Error(error.message);
+  }
+
+  res.status(200).json({ message: 'OTP/Magic link sent to email', data });
+});
+
+// @desc    Forgot Password - Send OTP to phone
+// @route   POST /api/auth/forgot-password
+// @access  Public
+export const forgotPassword = asyncHandler(async (req, res) => {
+  const result = await forgotPasswordService(req.body);
+  res.status(200).json(result);
+});
+
+// @desc    Reset Password using phone OTP
+// @route   POST /api/auth/reset-password
+// @access  Public
+export const resetPassword = asyncHandler(async (req, res) => {
+  const result = await resetPasswordService(req.body);
+  res.status(200).json(result);
+});
+
+// @desc    Get user profile
+// @route   GET /api/auth/me
+// @access  Private
+export const getUserProfile = asyncHandler(async (req, res) => {
+  const user = await User.findOne({ supabaseId: req.user.supabaseId });
+
+  if (user) {
+    res.json(user);
+  } else {
+    res.status(404);
+    throw new Error('User not found');
+  }
+});
